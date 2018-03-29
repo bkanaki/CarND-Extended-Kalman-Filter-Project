@@ -47,6 +47,23 @@ void KalmanFilter::Predict() {
 	P_ = F_ * P_ * Ft + Q_;
 }
 
+MatrixXd KalmanFilter::calculateKalmanGain() {
+  MatrixXd Ht = H_.transpose();
+  MatrixXd S = H_ * P_ * Ht + R_;
+	MatrixXd Si = S.inverse();
+	MatrixXd PHt = P_ * Ht;
+	MatrixXd K = PHt * Si;
+  return K;
+}
+
+void KalmanFilter::getNewEstimate(VectorXd &y, MatrixXd &K) {
+  //new estimate
+	x_ = x_ + (K * y);
+	long x_size = x_.size();
+	MatrixXd I = MatrixXd::Identity(x_size, x_size);
+	P_ = (I - K * H_) * P_;
+}
+
 void KalmanFilter::Update(const VectorXd &z) {
   /**
   TODO: - Done!
@@ -54,17 +71,9 @@ void KalmanFilter::Update(const VectorXd &z) {
   */
   VectorXd z_pred = H_ * x_;
 	VectorXd y = z - z_pred;
-	MatrixXd Ht = H_.transpose();
-	MatrixXd S = H_ * P_ * Ht + R_;
-	MatrixXd Si = S.inverse();
-	MatrixXd PHt = P_ * Ht;
-	MatrixXd K = PHt * Si;
+	MatrixXd K = calculateKalmanGain();
 
-	//new estimate
-	x_ = x_ + (K * y);
-	long x_size = x_.size();
-	MatrixXd I = MatrixXd::Identity(x_size, x_size);
-	P_ = (I - K * H_) * P_;
+	getNewEstimate(y, K);
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
@@ -90,18 +99,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   // as need to ensure correct x_ is taken for calculation)
   // MatrixXd H = tools.CalculateJacobian(x_);
 
-  // This is different for laser and radar
-  MatrixXd Ht = H_.transpose();
+  MatrixXd K = calculateKalmanGain();
 
-  // rest is the same
-  MatrixXd S = H_ * P_ * Ht + R_;
-	MatrixXd Si = S.inverse();
-	MatrixXd PHt = P_ * Ht;
-	MatrixXd K = PHt * Si;
-
-  //new estimate
-	x_ = x_ + (K * y);
-	long x_size = x_.size();
-	MatrixXd I = MatrixXd::Identity(x_size, x_size);
-	P_ = (I - K * H_) * P_;
+  getNewEstimate(y, K);
 }

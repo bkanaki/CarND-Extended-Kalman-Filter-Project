@@ -68,6 +68,17 @@ public:
    */
   void UpdateEKF(const Eigen::VectorXd &z);
 
+  /**
+   * Gets the new estimate based on the error obtained in update step
+   * @param y The error vector
+   * @param K Kalman Gain matrix
+   */
+  void getNewEstimate(VectorXd &y, MatrixXd &K);
+
+  /**
+   * Calculates the new Kalman gain based on updated error
+   */
+  MatrixXd calculateKalmanGain();
 };
 
 #endif /* KALMAN_FILTER_H_ */
