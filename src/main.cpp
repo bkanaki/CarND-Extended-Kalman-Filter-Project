@@ -77,7 +77,6 @@ int main()
           		iss >> timestamp;
           		meas_package.timestamp_ = timestamp;
           } else if (sensor_type.compare("R") == 0) {
-
       	  		meas_package.sensor_type_ = MeasurementPackage::RADAR;
           		meas_package.raw_measurements_ = VectorXd(3);
           		float ro;
@@ -91,40 +90,40 @@ int main()
           		meas_package.timestamp_ = timestamp;
           }
           float x_gt;
-    	  float y_gt;
-    	  float vx_gt;
-    	  float vy_gt;
-    	  iss >> x_gt;
-    	  iss >> y_gt;
-    	  iss >> vx_gt;
-    	  iss >> vy_gt;
-    	  VectorXd gt_values(4);
-    	  gt_values(0) = x_gt;
-    	  gt_values(1) = y_gt; 
-    	  gt_values(2) = vx_gt;
-    	  gt_values(3) = vy_gt;
-    	  ground_truth.push_back(gt_values);
-          
+          float y_gt;
+          float vx_gt;
+          float vy_gt;
+          iss >> x_gt;
+          iss >> y_gt;
+          iss >> vx_gt;
+          iss >> vy_gt;
+          VectorXd gt_values(4);
+          gt_values(0) = x_gt;
+          gt_values(1) = y_gt; 
+          gt_values(2) = vx_gt;
+          gt_values(3) = vy_gt;
+          ground_truth.push_back(gt_values);
+          cout << "gt_x_ = " << gt_values << endl;
+            
           //Call ProcessMeasurment(meas_package) for Kalman filter
-    	  fusionEKF.ProcessMeasurement(meas_package);    	  
+          fusionEKF.ProcessMeasurement(meas_package);    	  
 
-    	  //Push the current estimated x,y positon from the Kalman filter's state vector
+          //Push the current estimated x,y positon from the Kalman filter's state vector
+          VectorXd estimate(4);
 
-    	  VectorXd estimate(4);
+          double p_x = fusionEKF.ekf_.x_(0);
+          double p_y = fusionEKF.ekf_.x_(1);
+          double v1  = fusionEKF.ekf_.x_(2);
+          double v2 = fusionEKF.ekf_.x_(3);
 
-    	  double p_x = fusionEKF.ekf_.x_(0);
-    	  double p_y = fusionEKF.ekf_.x_(1);
-    	  double v1  = fusionEKF.ekf_.x_(2);
-    	  double v2 = fusionEKF.ekf_.x_(3);
+          estimate(0) = p_x;
+          estimate(1) = p_y;
+          estimate(2) = v1;
+          estimate(3) = v2;
+          
+          estimations.push_back(estimate);
 
-    	  estimate(0) = p_x;
-    	  estimate(1) = p_y;
-    	  estimate(2) = v1;
-    	  estimate(3) = v2;
-    	  
-    	  estimations.push_back(estimate);
-
-    	  VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
+    	    VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
 
           json msgJson;
           msgJson["estimate_x"] = p_x;
