@@ -1,10 +1,26 @@
 #include "kalman_filter.h"
 
+#define PI 3.14159265
+
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
 // Please note that the Eigen library does not initialize 
 // VectorXd or MatrixXd objects with zeros upon creation.
+
+// function to make sure that the phi (second element) in the
+// vector is limited between [-pi,pi]
+static inline void chackAndCorrectPhi(VectorXd &y) {
+  // must assert that y is of length 3, however, ok to assume true for now
+  float yphi = y(1);
+  // cout << "yphi: " << yphi << endl;
+  if (yphi > PI) {
+    y(1) = fmod(yphi, 2*PI);
+  } else if (yphi < -PI) {
+    y(1) = fmod(yphi, -2*PI);
+  }
+  // cout << "y(1): " << y(1) << endl;
+}
 
 KalmanFilter::KalmanFilter() {}
 
@@ -57,15 +73,19 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     * update the state by using Extended Kalman Filter equations
   */
   // used for the z_pred
-  float h0 = sqrt(x_(0) * x_(0) + x_(1) * x_(1)); 
-  float h1 = atan2(x_(1), x_(0));   // docs say angle is limited to [-pi,pi]
-  float h2 = (x_(0) * x_(2) + x_(1) * x_(3)) / h0;  // check div(0)?
+  float rho = sqrt(x_(0) * x_(0) + x_(1) * x_(1)); 
+  float phi = atan2(x_(1), x_(0));   // docs say angle is limited to [-pi,pi]
+  float rhodot = (x_(0) * x_(2) + x_(1) * x_(3)) / rho;  // check div(0)?
 
-  std::cout << "Value of angle phi: " << h1 << std::endl;
+  // std::cout << "Value of angle phi: " << h1 << std::endl;
 
   VectorXd z_pred = VectorXd(3);
-  z_pred << h0, h1, h2;
+  z_pred << rho, phi, rhodot;
+  // but here, after subtraction, need to make sure that phi is in [-pi,pi]
   VectorXd y = z - z_pred;
+  // float yphi = y(2);
+  chackAndCorrectPhi(y);
+
   // use the Hj from Jacobian (better to change in process measuremets
   // as need to ensure correct x_ is taken for calculation)
   // MatrixXd H = tools.CalculateJacobian(x_);

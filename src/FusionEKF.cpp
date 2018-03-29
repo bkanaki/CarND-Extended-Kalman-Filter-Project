@@ -89,7 +89,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
       float px = rho * cos(phi);
       float py = rho * sin(phi);
-      float vx = 0 /*rhoDot * cos(phi)*/;
+      float vx = 0 /*rhoDot * cos(phi)*/; // consistancy with laser
       float vy = 0 /*rhoDot * sin(phi)*/;
 
       VectorXd x = VectorXd(4);
@@ -165,7 +165,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     H_radar_ = tools.CalculateJacobian(ekf_.x_);
     ekf_.H_ = H_radar_;
     ekf_.R_ = R_radar_;
-    ekf_.Update(measurement_pack.raw_measurements_);
+    ekf_.UpdateEKF(measurement_pack.raw_measurements_);
   } else {
     // Laser updates
     ekf_.H_ = H_laser_;
@@ -175,5 +175,5 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   // print the output
   cout << "x_ = " << ekf_.x_ << endl;
-  // cout << "P_ = " << ekf_.P_ << endl;
+  cout << "P_ = " << ekf_.P_ << endl;
 }

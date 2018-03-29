@@ -103,7 +103,7 @@ int main()
           gt_values(2) = vx_gt;
           gt_values(3) = vy_gt;
           ground_truth.push_back(gt_values);
-          cout << "gt_x_ = " << gt_values << endl;
+          // cout << "gt_x_ = " << gt_values << endl;
             
           //Call ProcessMeasurment(meas_package) for Kalman filter
           fusionEKF.ProcessMeasurement(meas_package);    	  
